@@ -24,10 +24,12 @@ class CustomBarChart extends Component{
 
     componentDidUpdate(prevProps, prevState, snapshot) {
 
-        if(this.props.chart == 1 && this.state.station.length > 0 && this.props.isUpdate) {
-            this.props.updateState();
+        let currentProps = this.props;
+
+        if(currentProps.chart == 1 && this.state.station.length > 0 && currentProps.isUpdate) {
+            currentProps.updateState();
             if(this.state.selectValue == 0 || this.state.selectValue == "") {
-                let stations = this.props.stations.map(element => {
+                let stations = currentProps.stations.map(element => {
                     let data = element.data[element.data.length-1];
                     return {
                         id: element.id,
@@ -42,20 +44,18 @@ class CustomBarChart extends Component{
                 });
             }
             
-            let a = this.props.stations.find(element => element.id == this.state.selectValue);
+            let selectStation = currentProps.stations.find(element => element.id == this.state.selectValue);
             let obj = this.state.station[0];
-            obj.num_bikes_available = a.data[a.data.length-1]['num_bikes_available'];
-            obj.num_docks_available = a.data[a.data.length-1]['num_docks_available'];
+            obj.num_bikes_available = selectStation.data[selectStation.data.length-1]['num_bikes_available'];
+            obj.num_docks_available = selectStation.data[selectStation.data.length-1]['num_docks_available'];
             return this.setState({
                 station: [obj]
             })
         }
 
-        let currentProps = this.props;
-
-        if(this.props.chart === 1 && this.state.station.length < 1) {
+        if(currentProps.chart === 1 && this.state.station.length < 1) {
             if(currentProps.stations !== prevProps.stations) {
-                let stations = this.props.stations.map(element => {
+                let stations = currentProps.stations.map(element => {
                     let data = element.data[element.data.length-1];
                     return {
                         id: element.id,
@@ -72,8 +72,8 @@ class CustomBarChart extends Component{
             }
         }
 
-        if(this.props.chart === 2 && this.state.station.length < 1) {
-            let station = this.props.stations[0];
+        if(currentProps.chart === 2 && this.state.station.length < 1) {
+            let station = currentProps.stations[0];
             if(station)
                 return this.setState({
                     selectValue: station.id,
@@ -87,7 +87,6 @@ class CustomBarChart extends Component{
     }
 
     onChangeSelect(e) {
-
         let target_value = e.target ? e.target.value : e;
         
         if(!target_value) {
@@ -114,7 +113,6 @@ class CustomBarChart extends Component{
         })
         
         let station = this.props.stations.find(element => element.id === target_value);
-        
         if(this.props.chart === 1) {
             station = {
                 id: station.id,
@@ -154,7 +152,12 @@ class CustomBarChart extends Component{
                     </select>
                 </div>
             
-                <BarChart width={this.state.width} height={this.state.height} data={this.state.station} margin={{top: 50, right: 30, left: 20, bottom: 20}}>
+                <BarChart 
+                    width={this.state.width} 
+                    height={this.state.height} 
+                    data={this.state.station} 
+                    margin={{top: 50, right: 30, left: 20, bottom: 20}}
+                >
                     <CartesianGrid strokeDasharray="3 3"/>
                 
                     <XAxis dataKey='name' angle={-90} textAnchor="end" interval={0} hide/>
@@ -188,11 +191,7 @@ class CustomBarChart extends Component{
                 </BarChart>
             </div>
         );
-
     }
-
 }
-
-
 
 export default CustomBarChart;

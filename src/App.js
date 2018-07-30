@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
 import './App.css';
 import moment from 'moment';
+import Select from 'react-select';
 
 import Header from './components/header';
 import MapComponent from './components/gmap';
 import CustomBarChart from './components/charts';
-import Select from 'react-select';
 import { getStationsInformation, getStationsStatus } from './services';
 import { getComputedDistance, getConditionalIcon } from './shared';
 
@@ -39,22 +39,21 @@ class App extends Component {
   }
 
   async componentDidMount() {
-
     this.setStationInformation();
     this.setHistoricalData();
-    setInterval(this.setHistoricalData.bind(this), 15000);
-    
+    setInterval(this.setStationInformation.bind(this), 60000);
+    setInterval(this.setHistoricalData.bind(this), 60000);
   }
   
   componentWillUnmount() {
+    this.props.onRef(null);
   }
 
   /**
    * To fetch and store data for historical usage
    */
   async setHistoricalData() {
-    console.log('there')
-    
+
     let response2 = await getStationsStatus();
     let station_status = response2.data.data.stations;
     
@@ -65,9 +64,8 @@ class App extends Component {
 
       station_information.forEach(element1 => {
         station_status.forEach(element2 => {
-          
           if(element2.station_id !== element1.station_id) return;
-
+          
           stations.push({
             id: element1.station_id,
             name: element1.name,
@@ -88,15 +86,14 @@ class App extends Component {
       
       historicalStations.forEach(element1 => {
         station_status.forEach(element2 => {
-
           if(element2.station_id !== element1.id) return;
 
           if(element1.data.length > 7)
             element1.data.shift();
 
           element1['data'].push({
-            num_bikes_available: 4,//element2.num
-            num_docks_available: 20
+            num_bikes_available: element2.num_bikes_available,
+            num_docks_available: element2.num_docks_available
           });
 
         })
@@ -114,13 +111,11 @@ class App extends Component {
    * @param  {} _event
    */
   handleInputChange(_event) {
-
     let query = this.state.query;
 
     if(_event.target) {
       const target = _event.target;
       query[target.name] = target.value;
-
     } else {
       query['station_id'] = _event.id;
     }
@@ -168,12 +163,9 @@ class App extends Component {
 
     let station_information = response1.data.data.stations;
     let station_status = response2.data.data.stations;
-
     let stations_markers = [];
     for (const iterator of station_information) {
-
       for (const items of station_status) {
-
         if(items.station_id !== iterator.station_id) continue;
 
           let capacity = iterator.capacity-items.num_docks_disabled;
